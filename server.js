@@ -8,6 +8,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Route mặc định cho "/"
+app.get('/', (req, res) => {
+    res.json({ message: 'Welcome to the To Do List API. Use /tasks for operations.' });
+});
+
 // Kết nối MongoDB với biến môi trường
 mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://tunangcmc:Tuananh2k5@tunang.118khwv.mongodb.net/todolist?retryWrites=true&w=majority', {
     useUnifiedTopology: true
