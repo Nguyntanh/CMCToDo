@@ -13,9 +13,10 @@ app.get('/', (req, res) => {
     res.json({ message: 'Welcome to the To Do List API. Use /tasks for operations.' });
 });
 
-// Kết nối MongoDB với biến môi trường
-mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://tunangcmc:Tuananh2k5@tunang.118khwv.mongodb.net/todolist?retryWrites=true&w=majority', {
-    useUnifiedTopology: true
+// Kết nối MongoDB với URI cụ thể
+mongoose.connect('mongodb+srv://tunangcmc:Tuananh2k5@tunang.ginido2.mongodb.net/todolist?retryWrites=true&w=majority&appName=TunAng', {
+    useUnifiedTopology: true,
+    useNewUrlParser: true // Thêm để tránh cảnh báo deprecated
 }).then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
