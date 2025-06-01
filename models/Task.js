@@ -1,4 +1,3 @@
-// backend/models/Task.js
 const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema({
@@ -11,7 +10,8 @@ const taskSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   completedAt: { type: Date, default: null },
   deleted: { type: Boolean, default: false },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  notificationEmail: { type: String, default: null } // Thêm trường mới
 });
 
 taskSchema.index({ createdAt: -1, dueDate: 1, completedAt: 1, userId: 1 });

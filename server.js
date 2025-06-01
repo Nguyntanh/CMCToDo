@@ -1,13 +1,13 @@
-// backend/server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const taskRoutes = require('./routes/tasks');
+const { startDeadlineChecker } = require('./utils/deadlineChecker');
 
 const app = express();
-app.use(cors({ origin: '*' })); // Cho phép tất cả origin, cập nhật nếu cần
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
 // Route mặc định
@@ -19,8 +19,10 @@ app.get('/', (req, res) => {
 mongoose.connect(process.env.MONGODB_URI, {
   useUnifiedTopology: true,
   useNewUrlParser: true
-}).then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+}).then(() => {
+  console.log('Connected to MongoDB');
+  startDeadlineChecker(); // Khởi động kiểm tra deadline
+}).catch(err => console.error('MongoDB connection error:', err));
 
 // Sử dụng routes
 app.use('/auth', authRoutes);

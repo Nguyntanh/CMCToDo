@@ -1,4 +1,3 @@
-// backend/routes/tasks.js
 const express = require('express');
 const router = express.Router();
 const Task = require('../models/Task');
@@ -47,7 +46,7 @@ router.get('/', authMiddleware, async (req, res, next) => {
 
 router.post('/', authMiddleware, async (req, res, next) => {
   try {
-    const { text, isToday, important, dueDate, color } = req.body;
+    const { text, isToday, important, dueDate, color, notificationEmail } = req.body;
     if (!text || typeof text !== 'string' || text.trim() === '') {
       return res.status(400).json({ message: 'Tên công việc là bắt buộc và phải là chuỗi không rỗng' });
     }
@@ -57,6 +56,7 @@ router.post('/', authMiddleware, async (req, res, next) => {
       important: important || false,
       dueDate: dueDate ? new Date(dueDate) : null,
       color: color || null,
+      notificationEmail: notificationEmail || null, // Lưu email thông báo
       userId: req.userId
     });
     await task.save();
@@ -68,7 +68,7 @@ router.post('/', authMiddleware, async (req, res, next) => {
 
 router.put('/:id', authMiddleware, async (req, res, next) => {
   try {
-    const { text, completed, isToday, important, dueDate, color } = req.body;
+    const { text, completed, isToday, important, dueDate, color, notificationEmail } = req.body;
     const task = await Task.findOne({ _id: req.params.id, userId: req.userId });
     if (!task) {
       return res.status(404).json({ message: 'Không tìm thấy công việc' });
@@ -82,6 +82,7 @@ router.put('/:id', authMiddleware, async (req, res, next) => {
     if (typeof important === 'boolean') task.important = important;
     if (dueDate) task.dueDate = new Date(dueDate);
     if (color) task.color = color;
+    if (notificationEmail !== undefined) task.notificationEmail = notificationEmail; // Cập nhật email
     await task.save();
     res.json(task);
   } catch (error) {
@@ -98,6 +99,26 @@ router.delete('/:id', authMiddleware, async (req, res, next) => {
     task.deleted = true;
     await task.save();
     res.json({ message: 'Công việc đã được đánh dấu xóa' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Gửi thông báo qua email
+router.post('/notify', authMiddleware, async (req, res, next) => {
+  try {
+    const { taskId, taskText, dueDate } = req.body;
+    const task = await Task.findOne({ _id: taskId, userId: req.userId });
+    if (!task || !task.notificationEmail) {
+      return res.status(404).json({ message: 'Không tìm thấy công việc hoặc email thông báo' });
+    }
+
+    const { sendEmail } = require('../utils/email');
+    const subject = `Nhắc nhở: Công việc "${taskText}" sắp đến hạn`;
+    const text = `Công việc "${taskText}" của bạn sẽ đến hạn vào ${new Date(dueDate).toLocaleString('vi-VN')}. Vui lòng kiểm tra và hoàn thành!`;
+
+    await sendEmail(task.notificationEmail, subject, text);
+    res.json({ message: 'Thông báo đã được gửi' });
   } catch (error) {
     next(error);
   }
